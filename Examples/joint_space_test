@@ -1,0 +1,15 @@
+theta_1 = 40
+theta_2 = 80
+
+accn = 10 % deg/sec^2
+vel = 20 % deg/sec^2
+
+for i = 1:11
+    
+    t(i) = i-1;
+    
+    theta(i) = vel*t(i)-vel/accn;
+    
+end
+
+plot(t, theta);

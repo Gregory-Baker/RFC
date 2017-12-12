@@ -1,56 +1,54 @@
-% Workspace
+% Workspace of 5DoF Lynxmotion Arm
+%----------------------------------
+% Robotics Fundamentals Coursework
+% Greg Baker
 
 clear all
 close all
 
-q_1 = 0;
-q_2 = 0;
-q_3 = 0;
-q_4 = 0;
-q_5 = 0;
+%% Initialise joint angles
 
-counter = 0;
+% Specify limiting angles of each joint
+    load('stored_variables/limits.mat')
+        
+% Initialise joint angles       
+    q = [0 0 0 0 0];
 
-limits = [-90,  90;
-            0, 180;
-         -160,   0;
-         -130,  90;
-            0, 360];
-       
-n = 8; % Number of steps between limits
+% Number of steps between limits
+    n = 5;
 
-h = figure('visible','off');
-hold on;
+% Initialise plot
+    h = figure('visible','off');
+    hold on;
+
+%% Loop through range of motion for each joint angle
             
 for i = 1:(n+1)
-    
-    q_1 = limits(1,1) + (i-1)*(limits(1,2)-limits(1,1))/n;
+    q(1) = limits(1,1) + (i-1)*(limits(1,2)-limits(1,1))/n;
     
     for j = 1:(n+1)
-        
-        q_2 = limits(2,1) + (j-1)*(limits(2,2)-limits(2,1))/n;
+        q(2) = limits(2,1) + (j-1)*(limits(2,2)-limits(2,1))/n;
         
         for k = 1:(n+1)
-            
-            q_3 = limits(3,1) + (k-1)*(limits(3,2)-limits(3,1))/n;
+            q(3) = limits(3,1) + (k-1)*(limits(3,2)-limits(3,1))/n;
             
             for l = 1:(n+1)
-                
-                q_4 = limits(4,1) + (l-1)*(limits(4,2)-limits(4,1))/n;
+                q(4) = limits(4,1) + (l-1)*(limits(4,2)-limits(4,1))/n;
 
-                End_Eff = Forward_Kinematics(q_1, q_2, q_3, q_4, q_5);
+                coords = Forward_Kinematics(q);
 
-                x = End_Eff(1,4);
-                y = End_Eff(2,4);
-                z = End_Eff(3,4);
+                x = coords(1,6);
+                y = coords(2,6);
+                z = coords(3,6);
 
                 plot3(x,y,z,'bx');
                 
-                counter = counter + 1;
             end
         end
     end
 end
+
+%% Plot
 
 xlabel('x');
 ylabel('y');

@@ -1,0 +1,49 @@
+function plot_arm(q,T)
+
+% Plotting
+
+coords = [0; 0; 0]; 
+
+    for i = 1:5
+        j = i-1;
+        R{i} = T{i}
+        
+        while j > 0
+            R{i} = T{i}*T{j}
+        end
+    end
+
+    L1_end = T_01;
+    L2_end = T_01*T_12;
+    L3_end = T_01*T_12*T_23;
+    L4_end = T_01*T_12*T_23*T_34;
+    L5_end = T_01*T_12*T_23*T_34*T_45;
+
+% Coordinates
+
+    x = [0, L1_end(1,4), L2_end(1,4), L3_end(1,4), L4_end(1,4), L5_end(1,4)];
+    y = [0, L1_end(2,4), L2_end(2,4), L3_end(2,4), L4_end(2,4), L5_end(2,4)];
+    z = [0, L1_end(3,4), L2_end(3,4), L4_end(3,4), L4_end(3,4), L5_end(3,4)];
+    
+    fprintf('\n End Effector Position: ')
+    disp([ x(6) y(6) z(6) ])
+    
+    
+%Plot
+    
+    figure
+    hold on
+    plot3(x,y,z)
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+    xlim([-400,400])
+    ylim([-400,400])
+    % zlim([-400,400])
+    grid on
+    hold off
+    
+end
+
+
+    
