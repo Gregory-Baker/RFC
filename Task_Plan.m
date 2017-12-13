@@ -2,6 +2,7 @@
 
 clear all
 close all
+clc
 
 %% Input Coordinates
 
@@ -18,6 +19,9 @@ close all
 
 % Number of points
     n_points = size(p,1);
+
+% Number of active joints
+    n_joints = size(p,2);
     
 % Time interval between waypoints
     time_int = T/(n_points-1);
@@ -25,132 +29,127 @@ close all
 % Number of samples between each point
     n = 10;
     
+% Animation on
+    animation_on = false;
+    
 
-%% Plot 5 positions
+%% Coordinates of 5 positions
 
-% Initiate Figure
-    figure(1)
-    hold on    
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
-    view([80 30])
-    grid on
-    run('plot_positions.m')
-    plot3(poe(1,:), poe(2,:), poe(3,:), 'k--')
-    hold off
+% 
+for i = 1:n_points
+    
+% Joint angles from IK
+    joint_angles = inverse_kinematics (p(i,1),p(i,2),p(i,3),p(i,4));
+    joint_angles_all(i,:) = joint_angles;
+
+% Coordinates of links from FK
+    point_coords{i} = Forward_Kinematics(joint_angles);
+
+% Point of end effector
+    poe(:,i) = point_coords{i}(:,6);
+
+end
     
     
 %% Free motion trajectory with parabolic blends
 
 
 % Define global acceleration (deg/sec^2)
-    accn_mag = 30
+    accn_mag = 30;
         
-for n = 1:4
+% Returns 
+for i = 1:n_joints
     
-    t = [0; 0; 0; 0];
-
-    for j = 1:(n_points-1)
-
-        theta_1 = joint_angles_all(j,n);
-        theta_2 = joint_angles_all(j+1,n);
-        theta_diff = theta_2-theta_1;
-
-        accn_sign = sign(theta_diff);
-        accn = accn_sign*accn_mag;
-
-        vel1 = (time_int*accn - sqrt((time_int*accn)^2-4*accn*theta_diff))/2;
-        vel2 = (time_int*accn + sqrt((time_int*accn)^2-4*accn*theta_diff))/2;
-
-        if accn > 0
-            vel = min(vel1, vel2);
-        else
-            vel = max(vel1, vel2);
-        end
-
-        tb(j) = vel/accn;
-
-        theta{n}(j,1) = theta_1;
-        velocity{n}(j,1) = 0;
-        acceleration{n}(j,1) = accn;
-
-        n_samples = 101;
-
-        for i = 2:n_samples
-
-            t(i) = time_int*(i-1)/(n_samples-1);
-
-            if t(i) < tb(j)     
-                acceleration{n}(j,i) = accn;
-                velocity{n}(j,i) = accn*t(i);
-            elseif t(i) > (time_int - tb(j))   
-                acceleration{n}(j,i) = -accn;
-                velocity{n}(j,i) = vel - (t(i)- (time_int-tb(j)))*accn;
-            else
-                acceleration{n}(j,i) = 0;
-                velocity{n}(j,i) = vel;
-            end
-
-            theta{n}(j,i) = theta{n}(j,i-1) + velocity{n}(j,i)*(t(i)-t(i-1)) + (acceleration{n}(j,i)*(t(i)-t(i-1))^2)/2;
-            
-        end
-    end
+    joint_positions(1,:) = joint_angles_all(:,i);
     
+    joint_values{i} = parabolic_blend( joint_positions, accn_mag, T);
     
-    % Reshape matrices into arrays containing all points
-    m = 1;
-    time_vec(1) = 0;
-    time_step = time_int/n_samples;
-    
-    for j = 1:(n_points-1)
-        for i = 1:n_samples
-            theta_vec(n,m)        = theta{n}(j,i);
-            velocity_vec(n,m)     = velocity{n}(j,i);
-            acceleration_vec(n,m) = acceleration{n}(j,i);
-            if m ~= 1
-                time_vec(m)     = time_vec(m-1)+time_step;
-            end
-            m = m + 1;
-        end
-    end
-    theta_vec(n,m)        = theta{n}(j,i);
-    velocity_vec(n,m)     = velocity{n}(j,i);
-    acceleration_vec(n,m) = acceleration{n}(j,i);
-    time_vec(m)     = time_vec(m-1)+time_step;
 end
 
-
-for f = 1:m
-   hold on
-   q_free = [theta_vec(1,f), theta_vec(2,f), theta_vec(3,f), theta_vec(4,f), 0];
-   coords = Forward_Kinematics(q_free);
-   poe_free(:,f) = [coords(1,6); coords(2,6); coords(3,6)];
+k = 1;
+for i = 1:200
+    
+    n_samples = size(joint_values{1},2);
+    
+    q_free(i,:) = [joint_values{1}(2,k), joint_values{2}(2,k), joint_values{3}(2,k), joint_values{4}(2,k), 0];
+    
+    coords = Forward_Kinematics(q_free(i,:));
+    
+    for l = 1:3
+        poe_free(l,i) = coords(l,6);
+    end
+    
+% Initialise animated figure for free motion
+    figure(1)
+    hold on;
+    grid on;
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+    xlim([-100 200])
+    ylim([-200 200])
+    zlim([-100  250])
+    view([80 30])
+    
+% Plot animation at one quarter of sample rate
+    if mod(i,4) == 0
+        if exist('h2')
+            set(h2,'Visible','off')
+        end
+        h2 = plot3(coords(1,:), coords(2,:), coords(3,:), 'b', 'LineWidth', 2);
+        plot3(poe_free(1,:),poe_free(2,:), poe_free(3,:), 'r--');
+    end
+    
+    k = k + (n_samples-1)/200;
 end
+plot3(poe(1,:), poe(2,:), poe(3,:), 'go');
+hold off
+pause(1)
 
-figure(8)
+%% Joint angle, velocity and acceleration plots for free motion + parabolic blends
+
+figure(2)
 grid on
 hold on
-run('plot_positions.m')
-plot3(poe_free(1,:), poe_free(2,:), poe_free(3,:), 'k--');
+for i = 1:n_points
+    plot3(point_coords{i}(1,:), point_coords{i}(2,:), point_coords{i}(3,:), 'LineWidth', 2)
+end
+plot3(poe_free(1,:), poe_free(2,:), poe_free(3,:), 'r--');
+plot3(poe(1,:), poe(2,:), poe(3,:), 'k--');
 view([80 30])
 xlabel('x')
 ylabel('y')
 zlabel('z')
 hold off
+pause(1)
+
+figure(3)
+hold on
+for i = 1:n_joints
+plot(joint_values{i}(1,:), joint_values{i}(2,:));
+end
+legend('\theta_1', '\theta_2', '\theta_3', '\theta_4');
+hold off
+pause(1)
+
+figure(4)
+hold on
+for i = 1:n_joints
+plot(joint_values{i}(1,:), joint_values{i}(3,:));
+end
+legend('\theta_1', '\theta_2', '\theta_3', '\theta_4');
+xlabel('time (seconds)')
+ylabel('$\ddot{\theta}$', 'Interpreter','latex')
+hold off
+pause(1)
 
 figure(5)
-plot(time_vec, theta_vec);
+hold on
+for i = 1:n_joints
+plot(joint_values{i}(1,:), joint_values{i}(4,:));
+end
 legend('\theta_1', '\theta_2', '\theta_3', '\theta_4');
-
-figure(6)
-plot(time_vec, velocity_vec);
-legend('\theta_1', '\theta_2', '\theta_3', '\theta_4');
-
-figure(7)
-plot(time_vec, acceleration_vec);
-legend('\theta_1', '\theta_2', '\theta_3', '\theta_4');
-    
+hold off
 
 
 %% Straight Line Trajectory
@@ -182,22 +181,19 @@ end
     y2(m) = y((n_points-1),n);
     z2(m) = z((n_points-1),n);
     pitch2(m) = pitch((n_points-1),n);
-    
-% Plot end effector points
-    figure(3)
+   
+% Linear trajectory animation figure initialisation
+    figure(6)
+    grid on
     hold on
-    plot3(x2, y2, z2, 'bx')
-    plot3(x2, y2, z2, 'k')
     xlabel('x')
     ylabel('y')
     zlabel('z')
-    view(3)
-    grid on
-    hold off
+    xlim([-100 200])
+    ylim([-200 200])
+    zlim([-100  250])
+    view([80 30])
     
-% Plot arm position throughout task
-
-
 % Calculate joint angles for all sampled points using IK 
 for i = 1:(n_points-1)*(n-1)+1
 
@@ -205,14 +201,25 @@ for i = 1:(n_points-1)*(n-1)+1
     
 % Coordinates of links from FK
     coords = Forward_Kinematics(joint_angles);
+    
+% Point of end effector for linear trajectory
+    for l = 1:3
+        poe_lin(l,i) = coords(l,6);
+    end
+        
 
 % Plot arm trajectory
-    % figure(4)
-    % plot_path(coords);
-        
+    if exist('h4')
+        set(h4,'Visible','off')
+    end
+    h4 = plot3(coords(1,:), coords(2,:), coords(3,:), 'b', 'LineWidth', 2);
+    plot3(poe_lin(1,:),poe_lin(2,:), poe_lin(3,:), 'k--');
+    if animation_on
+        pause(0.2)
+    end
 end
-
-
+plot3(poe(1,:), poe(2,:), poe(3,:), 'go');
+hold off
 
 
 

@@ -1,60 +1,64 @@
 clear all
 close all
 
+joint_angles = [6, 129, 150, 136, 60];
+
+n_points = size(joint_angles, 2);
+n_transitions = n_points - 1;
+
 time_total = 20;
-n_points = 5;
-time_inc = time_total/(n_points-1); % [5, 6, 3, 4] % secs
+time_inc = time_total/(n_points-1); 
 
 accn_mag = 30; % deg/sec^2
 
-joint_angles = [40, 80, -20, 10, 65];
-
-
 % Calculate accelerations
-for i = 1:4
+for i = 1:n_transitions
     
     theta_diff(i) = joint_angles(i+1) - joint_angles(i);
-    accn(i) = sign(theta_diff(i))*accn_mag;
-
+    
 end
 
-accn(5) = sign(-theta_diff(4))*accn_mag;
+accn(1) = sign(theta_diff(1))*accn_mag;
+accn(n_points) = sign(-theta_diff(n_transitions))*accn_mag;
 
 t(1) = time_inc - sqrt(time_inc^2 - 2*theta_diff(1)/accn(1));
-t(5) = time_inc - sqrt(time_inc^2 + 2*theta_diff(4)/accn(5));
+t(n_points) = time_inc - sqrt(time_inc^2 + 2*theta_diff(n_transitions)/accn(n_points));
 
 vel(1) = theta_diff(1)/(time_inc-0.5*t(1));
-vel(4) = theta_diff(4)/(time_inc - 0.5*t(5));
+vel(n_transitions) = theta_diff(n_transitions)/(time_inc - 0.5*t(n_points));
 
 % Calculate velocities
-for i = 2:4
-    
-    if i ~= 4
-        vel(i) = theta_diff(i)/time_inc;
-    end
-    
+for i = 2:(n_transitions-1)
+    vel(i) = theta_diff(i)/time_inc;
+end
+
+for i = 2:n_transitions
+    accn(i) = sign(vel(i)- vel(i-1))*accn_mag;
+end
+%
+for i = 2:n_transitions
     t(i) = (vel(i)-vel(i-1))/accn(i);
 end
 
-
 % Calculate linear velocity times
 t_lin(1) = time_inc - t(1) - 0.5*t(2);
-t_lin(4) = time_inc - t(5) - 0.5*t(4);
-for i = 2:3
+t_lin(n_transitions) = time_inc - t(n_points) - 0.5*t(n_transitions);
+
+for i = 2:(n_transitions-1)
     t_lin(i)= time_inc - 0.5*t(i)-0.5*t(i+1);
 end
 
 j = 2;
 time_mode(1) = 0;
 
-for i = 1:5
+for i = 1:n_points
     
     time_mode(j) = time_mode(j-1) + t(i);
     accelerating(j) = 1;
     
     j = j+1;
     
-    if i ~= 5
+    if i ~= n_points
         accelerating(j) = 0;
         time_mode(j) = time_mode(j-1)+ t_lin(i);
     end
