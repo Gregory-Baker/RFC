@@ -14,9 +14,9 @@ clc
 
 % Location and radius of spherical objects (mm)
     h = 150;
-    j = -50;   % Second sphere at j = +50 (mm)
+    j = 0;   % Second sphere at j = +50 (mm)
     k = 200
-    r = 20;
+    r = 40;
 
 %% Straight line to target
 
@@ -27,9 +27,9 @@ clc
     pitch = 0;
 
 % Initialise matrices for intermediate points
-    x = zeros(1,20);
-    y = zeros(1,20);
-    z = zeros(1,20);
+    x = zeros(1,n);
+    y = zeros(1,n);
+    z = zeros(1,n);
 
 % Index variables
     i = 1;
@@ -47,7 +47,7 @@ clc
     figure(1)
     grid on
     hold on
-    view([80 30])
+    view([100 30])
     xlabel('x')
     ylabel('y')
     zlabel('z')
@@ -98,7 +98,7 @@ while round(x(i)) ~= p(2,1) || round(y(i)) ~= p(2,2) || round(z(i) ~= p(2,3))
         end
         h2 = plot3(coords(1,:), coords(2,:), coords(3,:), 'b', 'LineWidth', 2);
         pause(0.3)
-        plot3(poe(1,:), poe(2,:), poe(3,:), 'k--', 'LineWidth', 2)
+        plot3(poe(1,:), poe(2,:), poe(3,:), 'r--', 'LineWidth', 2)
         m = m+1;
     end
     

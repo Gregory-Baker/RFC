@@ -1,3 +1,9 @@
+% DH Transform function
+%--------------------------------------------------------------
+% Outputs
+%   transform = [4x4 matrix]
+%             = transformation matrix between two joint frames
+%--------------------------------------------------------------
 function transform = DHTransform(a_n, alpha_n, d_n, theta_n)
 
     c_t = cos(theta_n);

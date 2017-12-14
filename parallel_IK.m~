@@ -5,9 +5,9 @@ close all
 
 %% Input Parameters
 
-x_c = -100;     % x pos of centre of platform (mm)
-y_c = 50;       % y pos of centre of platform (mm)
-alpha = -10;    % Angle of platform (deg)
+x_c = 40;       % x pos of centre of platform (mm)
+y_c = 30;       % y pos of centre of platform (mm)
+alpha = 20;     % Angle of platform (deg)
 
 %% Unit change
 
@@ -143,7 +143,8 @@ end
     text(0, 15, 'B')
     
 % Display angle of platform
-    str = strcat('\alpha = ', num2str(round(alpha*180/pi)), '^o');
+    cloves = str('$^circ$', 'Interpreter', 'latex')
+    str = strcat('\alpha = ', num2str(round(alpha*180/pi)));
     str1 = strcat('x = ', num2str(x_c));
     str2 = strcat('y = ', num2str(y_c));
     str3 = {str, str1, str2};

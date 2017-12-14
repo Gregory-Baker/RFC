@@ -7,8 +7,8 @@
 %   pitch_deg = pitch angle of end effector (degrees)
 %
 % Outputs
-%   joint_angles = [1x5 array]
-%                = angles of joints 1-5 (degrees)
+%   joint_angles = [3x6 array]
+%                = [x;y;z] coordinates of all joints
 %----------------------------------------------------------------------
 function joint_angles = inverse_kinematics(x, y, z, pitch_deg)
 
@@ -111,14 +111,14 @@ function joint_angles = inverse_kinematics(x, y, z, pitch_deg)
             end
         end
      
-    % Outputs joint angels if all are within limits
+    % Retu
         if out_of_limits == 0
             joint_angles = q(:,j);           
             return
         end
     end
     
-% Return info if point is not reachable
+    
     p0e = [x, y, z+l(1)];
     disp(p0e)
     disp(q)

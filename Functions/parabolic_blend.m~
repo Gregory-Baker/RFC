@@ -90,7 +90,7 @@ function joint_values = parabolic_blend(joint_angles, accn_mag, time_total)
 % Number of samples
     n_inc = 1001;
 
-% Increment of time between each sample
+% 
     time_step = time_total/(n_inc-1);
 
     j = 2;

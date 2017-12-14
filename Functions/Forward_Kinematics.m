@@ -1,5 +1,13 @@
 % Forward Kinematics function
-%----------------------------------
+%----------------------------------------------------------------------
+% Inputs
+%   q = [5x1 array] 
+%     = all joint angles(deg)
+%
+% Outputs
+%   coords = [3x6 array]
+%          = [x;y;z] coordinates of all joints
+%----------------------------------------------------------------------
 function coords = Forward_Kinematics(q)
 
 % Convert q from deg to rad
@@ -45,6 +53,4 @@ function coords = Forward_Kinematics(q)
             coords(k, j+1) = round(R{j}(k,4), 2);
         end
     end
-
-
 end

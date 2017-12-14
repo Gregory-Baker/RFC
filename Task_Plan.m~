@@ -208,9 +208,7 @@ end
     fig.PaperUnits = 'inches';
     fig.PaperPosition = [0 0 6 4];
     print('Figures/joint-angles-plot','-depsc','-r0')
-    if animation_on
-        pause(1)
-    end
+    pause(1)
 
 % Joint velocity vs time plot for free motion
     figure(4)
@@ -227,9 +225,7 @@ end
     fig.PaperUnits = 'inches';
     fig.PaperPosition = [0 0 6 4];
     print('Figures/joint-velocities-plot','-depsc','-r0')
-    if animation_on
-        pause(1)
-    end
+    pause(1)
 
 % Joint acceleration vs time plot for free motion
     figure(5)
@@ -246,9 +242,7 @@ end
     fig.PaperUnits = 'inches';
     fig.PaperPosition = [0 0 6 4];
     print('Figures/joint-accelerations-plot','-depsc','-r0')
-    if animation_on
-        pause(1)
-    end
+    pause(1)
 
 %% Straight Line Trajectory
 
@@ -341,15 +335,13 @@ hold off
     zlabel('z')
     hold off
     set(gca, 'FontSize', 14);
-    if animation_on
-        pause(1)
-    end
+    pause(1)
     
     
 %% Obstacle avoidance + animation
 
 % Object after specified point 
-    obj_aft = 4;
+    obj_aft = 1;
 
 % Location and radius of spherical object (mm)
     h = (p(obj_aft,1)+p(obj_aft+1,1))/2;
@@ -436,14 +428,14 @@ for i = 1:(n_points-1)
                 set(h5,'Visible','off')
             end
             h5 = plot3(coords(1,:), coords(2,:), coords(3,:), 'b', 'LineWidth', 2);
-            
             if animation_on
-                pause(0.02)
-            end
+            pause(0.02)
             
             plot3(poe_av(1,:), poe_av(2,:), poe_av(3,:), 'r', 'LineWidth', 2)
             m = m+1;
-        end   
+           
+        end
+        
     end 
 end
 
